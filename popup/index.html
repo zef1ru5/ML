@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <header class="header">
+      <div class="method">
+        <input type="radio" name="mlMethod" id="GaussNB" checked="checked" value=1>
+        <label for="GaussNB">GaussNB</label>
+      </div>
+      <div class="method">
+        <input type="radio" name="mlMethod" id="LogReg" value=2>
+        <label for="LogReg">LogReg</label>
+      </div>
+      <div class="method">
+        <input type="radio" name="mlMethod" id="any" value=3>
+        <label for="any">any</label>
+      </div>
+    </header>
+
+    <main class="main">
+
+    </main>
+
+    <footer class="footer">
+      <div class="button" id="save-data">save</div>
+      <div class="button" id="show-data">show</div>
+      <div class="switch">
+        <input type="checkbox" id="switcher" />
+        <label for="switcher"></label>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
