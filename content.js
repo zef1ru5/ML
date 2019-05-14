@@ -2,7 +2,7 @@ console.log('content');
 
 // -----------------------------Data Set Сollector---------------------------
 class DataSetСollector {
-  constructor() {
+  constructor(mlMethod = 1) {
     this.nodeRoot = document.body.querySelectorAll('*'); // все элементв в body по порядку
     this.illegalTags = ['SCRIPT', 'STYLE'];
 
@@ -26,6 +26,8 @@ class DataSetСollector {
     this.isAllStyles = false;
     this.anyCss = ['color', 'height', 'width', 'font-size', 'inline-size', 'font-weight', 'block-size', 'line-height', 'perspective-origin', 'font-family'];
     this.initDataPointStyle();
+
+    this.mlMethod = mlMethod;
   }
 
   initDataPointStyle() {
@@ -55,15 +57,28 @@ class DataSetСollector {
   nameTag(element) {
     let prop = 'nameTag',
         value = element.nodeName;
-    let idx = this.helperPushElGetIdx(prop, value);
-    return idx
+    
+    if (this.mlMethod == 1) {
+      return value
+    } else if (this.mlMethod == 2) {
+      let idx = this.helperPushElGetIdx(prop, value);
+      return idx
+    } // else mlMethod Apripri
+    
   }
 
   countChildren(element) {
     let prop = 'countChildren',
         value = element.querySelectorAll('*').length;
-    let idx = this.helperPushElGetIdx(prop, value);
-    return idx
+    
+    if (this.mlMethod == 1) {
+      return value
+    } else if (this.mlMethod == 2) {
+      let idx = this.helperPushElGetIdx(prop, value);
+      return idx
+    } // else mlMethod Apripri
+
+    
   }
 
   level(element) {
@@ -73,8 +88,14 @@ class DataSetСollector {
       element = element.parentNode;
       value++;
     }
-    let idx = this.helperPushElGetIdx(prop, value);
-    return idx
+
+    if (this.mlMethod == 1) {
+      return value
+    } else if (this.mlMethod == 2) {
+      let idx = this.helperPushElGetIdx(prop, value);
+      return idx
+    } // else mlMethod Apripri
+
   }
 
   // h2 GroupAdvertsWrapper_title__63YNe
@@ -87,15 +108,28 @@ class DataSetСollector {
     let strClass = element.className;
     let arrClass = strClass.split(' ');
 
-    for (let i=1; i <= countClass; i++) {
+    for (let i=0; i < countClass; i++) {
       let value = '';
 
-      if (arrClass[i - 1] == undefined) { // arrClass[i - 1] т.к. i=1
-        result.push(-1);
+      if (arrClass[i] == undefined) { // если второго класса нет, либо нет классов совсем -> -1
+
+        if (this.mlMethod == 1) {
+          result.push("-1");
+        } else if (this.mlMethod == 2) {
+          result.push(-1);
+        } // else mlMethod Apripri
+        
+
       } else {
-        value = arrClass[i - 1];
-        let idx = this.helperPushElGetIdx(prop, value);
-        result.push(idx);
+
+        value = arrClass[i];
+        if (this.mlMethod == 1) {
+          result.push(value)
+        } else if (this.mlMethod == 2) {
+          let idx = this.helperPushElGetIdx(prop, value);
+          result.push(idx);
+        } // else mlMethod Apripri
+
       }
     }
 
@@ -111,13 +145,28 @@ class DataSetСollector {
       let prop = `${propBase}${i}`;
       let value = '';
 
-      if (element.parentNode == null) {
-        result.push(-1);
+      if (element.parentNode == null) { // если нет родителя -> вставить родителя последнего элемента (для элементов рядом с body)
+
+        if (this.mlMethod == 1) {
+          result.push("-1");
+        } else if (this.mlMethod == 2) {
+          result.push(-1);
+        } // else mlMethod Apripri
+        
+
       } else {
+
         element = element.parentNode;
         value = element.nodeName;
-        let idx = this.helperPushElGetIdx(prop, value);
-        result.push(idx);
+
+        if (this.mlMethod == 1) {
+          result.push(value);
+        } else if (this.mlMethod == 2) {
+          let idx = this.helperPushElGetIdx(prop, value);
+          result.push(idx);
+        } // else mlMethod Apripri
+        
+
       }
     }
 
@@ -125,7 +174,7 @@ class DataSetСollector {
   }
 
   style(element) {
-    let styles = window.getComputedStyle(element, null);
+    let styles = window.getComputedStyle(element, null); // CSSStyleDeclaration - стили, их значения
     
     let css = [];
     if (this.isAllStyles) {
@@ -148,8 +197,14 @@ class DataSetСollector {
         value = font; // "Fira Sans"
       }
 
-      let idx = this.helperPushElGetIdx(prop, value);
-      result.push(idx);
+      if (this.mlMethod == 1) {
+        result.push(value);
+      } else if (this.mlMethod == 2) {
+        let idx = this.helperPushElGetIdx(prop, value);
+        result.push(idx);
+      } // else mlMethod Apripri
+
+      
     }
 
     return result
@@ -294,18 +349,22 @@ class GaussNB {
   }
 
   standardDeviation(featureColumn) {
-    let mean = this.mean(featureColumn),
-      squaredDifferenceArr = [];
+    let mean = this.mean(featureColumn);
+    let squaredDifferenceArr = [];
+
     for (let number of featureColumn) {
       let difference = number - mean,
         squaredDifference = Math.pow(difference, 2);
       squaredDifferenceArr.push(squaredDifference);
     }
-    let squaredDifferenceSum = this.sumInArray(squaredDifferenceArr),
-      countElementsN = parseFloat(featureColumn.length - 1);
+
+    let squaredDifferenceSum = this.sumInArray(squaredDifferenceArr);
+    let countElementsN = parseFloat(featureColumn.length - 1);
+
     if (countElementsN == 0) return 0;                      // ???
-    let variance = squaredDifferenceSum / countElementsN,
-      standardDeviation = Math.sqrt(variance);
+    let variance = squaredDifferenceSum / countElementsN;
+    let standardDeviation = Math.sqrt(variance);
+    
     return standardDeviation;
   }
 
@@ -370,29 +429,41 @@ class GaussNB {
 
   }
 
-  probabilityDensityFunction(element, mean, stdev) {
-    if (stdev == 0) return 1;    // ???
+
+
+  probabilityDensityFunction(element, mean, stdev) {    
+    if (stdev == 0) { // ???
+      if (element == mean) {
+        return 1
+      } else {
+        return 0
+      }
+    }
+
     let variance = Math.pow(stdev, 2),
-      difference = element - mean,
-      squaredDifference = Math.pow(difference, 2),
-      expPower = (-1 / 2) * (squaredDifference / variance),
-      exponent = Math.exp(expPower),
-      denominator = Math.sqrt(2 * Math.PI) * stdev,
-      pdf = exponent / denominator;
+        difference = element - mean,
+        squaredDifference = Math.pow(difference, 2),
+        expPower = (-1 / 2) * (squaredDifference / variance),
+        exponent = Math.exp(expPower),
+        denominator = Math.sqrt(2 * Math.PI) * stdev,
+        pdf = exponent / denominator;
+    
     return pdf;
   }
 
   likelihood(testVector, priorMeanStdev) {
     let likelihood = 1;
-    // ! проходится только по длине features, не включая target (если он есть при тесте)
-    let totalFeatures = priorMeanStdev['meanStdev'].length;
+    let totalFeatures = priorMeanStdev['meanStdev'].length;  // ! проходится только по длине features, не включая target (для теста)
+
     for (let index = 0; index < totalFeatures; index++) {
       let feature = testVector[index],
           mean = priorMeanStdev['meanStdev'][index]['mean'],
           stdev = priorMeanStdev['meanStdev'][index]['stdev'],
           pdf = this.probabilityDensityFunction(feature, mean, stdev);
+      
       likelihood *= pdf;
     }
+
     return likelihood;
   }
 
@@ -403,9 +474,11 @@ class GaussNB {
         let priorMeanStdev = this.model[target],
             prior = priorMeanStdev['prior'],
             likelihood = this.likelihood(testVector, priorMeanStdev);
+        
         jointProbs[target] = prior * likelihood;
       }
     }
+
     return jointProbs;
   }
 
@@ -431,8 +504,10 @@ class GaussNB {
   getPrediction(testVector) {
     let prediction = {};
     let bestProb = 0,
-      bestTarget;
+        bestTarget;
+    
     let posterior = this.posterior(testVector);
+
     for (let target in posterior) {
       if (posterior.hasOwnProperty(target)) {
         let targetProb = posterior[target];
@@ -447,15 +522,18 @@ class GaussNB {
       'target': bestTarget,
       'probability': bestProb
     };
+
     return prediction;
   }
 
   predict(testSet) {
     let predictions = [];
+
     for (let testVector of testSet) {
       let result = this.getPrediction(testVector);
       predictions.push(result);
     }
+
     return predictions;
   }
 }
@@ -805,14 +883,16 @@ class LogisticRegression {
 class Selector {
   constructor() {
     this.selectedElements = [];
-      this.eventMethod = [
-        { onEvent: 'mouseover', method: this.MouseOverOutEffect.bind(this) },
-        { onEvent: 'mouseout', method: this.MouseOverOutEffect.bind(this) },
-        { onEvent: 'click', method: this.ClickEffect.bind(this) },
-        { onEvent: 'dblclick', method: this.DoubleClickEffect.bind(this) }
-      ];
-    this.targetTrue = 1;
-    this.targetFalse = 0;
+    this.eventMethod = [
+      { onEvent: 'mouseover', method: this.MouseOverOutEffect.bind(this) },
+      { onEvent: 'mouseout', method: this.MouseOverOutEffect.bind(this) },
+      { onEvent: 'click', method: this.ClickEffect.bind(this) },
+      { onEvent: 'dblclick', method: this.DoubleClickEffect.bind(this) }
+    ];
+    
+    this.dataTargetFalse = 0;
+    this.dataTargetTrue = 1;    
+    this.dataTargetPredict = 2;
     this.predictedElements = [];
 
     this.probabilityRate = 0.8;
@@ -865,13 +945,10 @@ class Selector {
     event.preventDefault();
     let element = event.target
     if (event.ctrlKey) {
-      element.classList.remove("TargetTrue", "TargetFalse");
       delete element.dataset.target;
       this.DelElement(element);
     } else {
-      element.classList.remove("TargetFalse");
-      element.classList.add("TargetTrue");
-      element.dataset.target = this.targetTrue;
+      element.dataset.target = this.dataTargetTrue;
       this.PushUniqueElement(element);
     }
   }
@@ -880,9 +957,7 @@ class Selector {
   DoubleClickEffect(event) {
     event.preventDefault();
     let element = event.target
-    element.classList.remove("TargetTrue");
-    element.classList.add("TargetFalse");
-    element.dataset.target = this.targetFalse;
+    element.dataset.target = this.dataTargetFalse;
     this.PushUniqueElement(element);
   }
 
@@ -891,7 +966,7 @@ class Selector {
     // Добвымть | Убрать EventListener
     for (const item of this.eventMethod) {
       let onEvent = item['onEvent'],
-        method = item['method'];
+          method = item['method'];
       if (state) {
         document.addEventListener(onEvent, method);
       } else {
@@ -900,16 +975,14 @@ class Selector {
     }
     // При выкл 
     if (!state) {
-      // Убрать классы CSS выделения-selected и dataset в html
+      // Убрать dataset
       for (let element of this.selectedElements) {
-        element.classList.remove("TargetTrue", "TargetFalse");
-        delete element.dataset.target;
+        delete element.dataset.target;        
       }
       this.selectedElements = [] // обнулить selected
 
-      // Убрать классы CSS выделения-predicted
       for (let element of this.predictedElements) {
-        element.classList.remove("TargetPredict");
+        delete element.dataset.predict;
       }
       this.predictedElements = [] // обнулить predicted
     }
@@ -923,7 +996,7 @@ class Selector {
     } else if (this.mlMethod == 2) {
       ML = new LogisticRegression();
     } else {
-      console.log('any mlMethod')
+      console.log('Apriori mlMethod')
     }
 
     if (testSet.length == 0) { // test  
@@ -938,12 +1011,14 @@ class Selector {
   }
 
   Show() {
-    let dataSetCollector = new DataSetСollector();
+    let dataSetCollector = new DataSetСollector(this.mlMethod);
     let dataSet = dataSetCollector.collectDataSet();
     console.log(dataSet);
     
-    let trainSet = dataSet['trainSet'];
-    let testSet = dataSet['testSet'];
+    // let trainSet = dataSet['trainSet'];
+    // let testSet = dataSet['testSet'];
+    let trainSet = [[-3,7,3],[1,5,3], [1,2,3], [-2,0,3], [2,3,4], [-4,0,3], [-1,1,3], [1,1,4], [-2,2,3], [2,7,4], [-4,1,4], [-2,7,4]];
+    let testSet = [[1,2],[3,4]];
     
     if (trainSet.length == 0) { // если нет тренировочных данных -> выход
       console.log('no train set error');
@@ -963,20 +1038,20 @@ class Selector {
 
     for (let index = 0; index < predictLength; index++) {
       let elem = predicted[index];
-      if ((elem['target'] == this.targetTrue) && (elem['probability'] > this.probabilityRate)) {
+      if ((elem['target'] == this.dataTargetTrue) && (elem['probability'] > this.probabilityRate)) {
         let id = testSetId[index],
             pageElem = pageElements[id];
-        pageElem.classList.add("TargetPredict");
+        pageElem.dataset.predict = this.dataTargetPredict;
         this.predictedElements.push( pageElem );
       }
     }
-    console.log(testSetId); // DELETE
-    console.log(this.predictedElements); // DELETE
+    console.log(testSetId);
+    console.log(this.predictedElements);
   }
 
   ClearPredictedElements() {
     for (let pageElem of this.predictedElements) {
-      pageElem.classList.remove("TargetPredict");
+      delete pageElem.dataset.predict;
     }
     this.predictedElements = [];
   }
