@@ -4,17 +4,13 @@
 }
 
 
-[data-target="1"]
+[data-target="Yes"]
 {
   box-shadow: 0 0 4px 4px #8DB87C;
 }
 
-[data-target="0"]
-{
-  box-shadow: 0 0 4px 4px #cb3737;
-}
 
-[data-predict="2"]
+[data-predict="Predict"]
 {
   box-shadow: inset 0 0 4px 4px #048998;
 }
