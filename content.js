@@ -260,7 +260,8 @@ class NB {
               if (valueCounts.hasOwnProperty(attrValue)) {
                 let count = valueCounts[attrValue];
                 let countForClass = classes[category];
-                this.likelihood[category][colName][attrValue] = count / countForClass;
+                // this.likelihood[category][colName][attrValue] = (count / countForClass);
+                this.likelihood[category][colName][attrValue] = (count / countForClass) * this.total;
               }
             }
           }
@@ -286,8 +287,9 @@ class NB {
 
           // нет параметра для данного класса (в столбце)
           if (!this.likelihood[category][colName].hasOwnProperty(attrValue)) {
-            notIncluded++;
-            prob = prob * (1 / this.total)
+            notIncluded++; // не нужно для 2
+            // prob = prob * (1 / this.total)
+            prob = prob * 1             
           }
           else { prob = prob * this.likelihood[category][colName][attrValue] }
 
@@ -437,43 +439,43 @@ class Selector {
       pageElements = dataSet['pageElements'];
 
 
-    trainSet = [
-      ['Rainy', 'Hot', 'High', 'False'],
-      ['Rainy', 'Hot', 'High', 'True'],
-      ['Overcast', 'Hot', 'High', 'False'],
-      ['Sunny', 'Mild', 'High', 'False'],
-      ['Sunny', 'Cool', 'Normal', 'False'],
-      ['Sunny', 'Cool', 'Normal', 'True'],
-      ['Overcast', 'Cool', 'Normal', 'True'],
-      ['Rainy', 'Mild', 'High', 'False'],
-      ['Rainy', 'Cool', 'Normal', 'False'],
-      ['Sunny', 'Mild', 'Normal', 'False'],
-      ['Rainy', 'Mild', 'Normal', 'True'],
-      ['Overcast', 'Mild', 'High', 'True'],
-      ['Overcast', 'Hot', 'Normal', 'False'],
-      ['Sunny', 'Mild', 'High', 'True']];
-    targets = ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No'];
-    testSet = [['Rainy', 'Cool', 'High', 'True'],
-    ['Overcast', 'Cool', 'High', 'True']]; // prob=0
-    labels = ['Outlook', 'Temp', 'Humldity', 'Windy']
-
     // trainSet = [
-    //   ['div','q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
-    //   ['div','q1', '-1', '150px', '150px', 'rgb(0, 255, 0)']
-    // ];
-    // targets = ['Yes','Yes'];
-    // testSet= [
-    //   ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
-    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],      
-    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
-    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
-    //   ['spam', '-1', '-1', 'auto', 'auto', 'rgb(0, 0, 0)'],
-    //   ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
-    //   ['div', 'q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
-    //   ['div', 'q1', '-1', '150px', '150px', 'rgb(0, 255, 0)'],
-    //   ['div', 'q1', '-1', '155px', '155px', 'rgb(0, 0, 255)'] 
-    // ];
-    // labels = ['tagName', 'class1','class2','height','width', 'color']
+    //   ['Rainy', 'Hot', 'High', 'False'],
+    //   ['Rainy', 'Hot', 'High', 'True'],
+    //   ['Overcast', 'Hot', 'High', 'False'],
+    //   ['Sunny', 'Mild', 'High', 'False'],
+    //   ['Sunny', 'Cool', 'Normal', 'False'],
+    //   ['Sunny', 'Cool', 'Normal', 'True'],
+    //   ['Overcast', 'Cool', 'Normal', 'True'],
+    //   ['Rainy', 'Mild', 'High', 'False'],
+    //   ['Rainy', 'Cool', 'Normal', 'False'],
+    //   ['Sunny', 'Mild', 'Normal', 'False'],
+    //   ['Rainy', 'Mild', 'Normal', 'True'],
+    //   ['Overcast', 'Mild', 'High', 'True'],
+    //   ['Overcast', 'Hot', 'Normal', 'False'],
+    //   ['Sunny', 'Mild', 'High', 'True']];
+    // targets = ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No'];
+    // testSet = [['Rainy', 'Cool', 'High', 'True'],
+    // ['Overcast', 'Cool', 'High', 'True']]; // prob=0
+    // labels = ['Outlook', 'Temp', 'Humldity', 'Windy']
+
+    trainSet = [
+      ['div','q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
+      ['div','q1', '-1', '150px', '150px', 'rgb(0, 255, 0)']
+    ];
+    targets = ['Yes','Yes'];
+    testSet= [
+      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],      
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+      ['spam', '-1', '-1', 'auto', 'auto', 'rgb(0, 0, 0)'],
+      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+      ['div', 'q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
+      ['div', 'q1', '-1', '150px', '150px', 'rgb(0, 255, 0)'],
+      ['div', 'q1', '-1', '155px', '155px', 'rgb(0, 0, 255)'] 
+    ];
+    labels = ['tagName', 'class1','class2','height','width', 'color']
 
     if (trainSet.length == 0) { // если нет тренировочных данных -> выход
       console.log('no train set');
@@ -540,7 +542,7 @@ class Selector {
     let text = 'qwe';
 
     let encryptSecret = CryptoJS.AES.encrypt(this.secret, password);
-    let encryptText = CryptoJS.AES.encrypt(text, password);
+    let encryptText = CryptoJS.AES.encrypt(text, password);// +sec + txt
     
     let encryptData = {
       'encryptSecret':encryptSecret.toString(),
