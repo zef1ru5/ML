@@ -168,18 +168,20 @@ class DataSetСollector {
 // -----------------------------Naive Bayesian Classifier---------------------------
 class NB {
   constructor() {
-    this.prior = {}, // априорная вер-сть
-    this.likelihood = {}, //Условная вероятность / таблица правдоподобия
-    this.frequency = {} // частота появления элементов / табл частот
+    this.prior = {}; // априорная вер-сть для класса
+    this.likelihood = {}; //Условная вероятность / таблица правдоподобия
+    this.frequency = {}; // частота появления элементов / табл частот
+    this.total = 0;
+    this.countParam = {}; // общее число(кол-во) появления элемента в столбце
   }
 
   train(trainSet, targets, labels) {
-    let total = trainSet.length;
+    this.total = trainSet.length;
 
     let classes = {}; // кол-во каждого класса
     let counts = {};
 
-    for (let idx=0; idx < total; idx++) {
+    for (let idx=0; idx < this.total; idx++) {
       let vector = trainSet[idx];
       let category = targets[idx];
 
@@ -204,16 +206,41 @@ class NB {
     }
 
 
-    // prior probabilities p(h) / априорная вер-сть
+    // prior probabilities p(class) / априорная вер-сть для класса
     for (let category in classes) {
       if( classes.hasOwnProperty(category) ) {
         let countForClass = classes[category];
-        this.prior[category] = countForClass / total;
+        this.prior[category] = countForClass / this.total;
+      } 
+    }
+
+    // общее количетво параметра (аттрибута) в столбце
+    for (let category in counts) {
+      if( classes.hasOwnProperty(category) ) {
+        let columns = counts[category];        
+
+        for (let colName in columns) {
+          if( columns.hasOwnProperty(colName) ) {
+            let valueCounts = columns[colName];
+
+            if (!this.countParam.hasOwnProperty(colName)) this.countParam[colName] = {};
+
+            for (let attrValue in valueCounts) {
+              if( valueCounts.hasOwnProperty(attrValue) ) {
+                let count = valueCounts[attrValue];
+
+                if (!this.countParam[colName].hasOwnProperty(attrValue)) this.countParam[colName][attrValue] = 0;
+
+                this.countParam[colName][attrValue] += count;
+              }
+            }
+          }
+        }
       } 
     }
 
 
-    // conditional probabilities p(D|h) / Условная вероятность
+    // conditional probabilities p(param|class) / Условная вероятность
     for (let category in counts) {
       if( classes.hasOwnProperty(category) ) {
         let columns = counts[category];
@@ -247,20 +274,55 @@ class NB {
     for (let category in this.prior) {
       if( this.prior.hasOwnProperty(category) ) {
         let prob = this.prior[category];
+        let evedence = 1; // new
 
-        let col = 0;
+        let notIncluded = 0;
+
+        let colIndex = 0;
         for (let attrValue of testVector) {
-          let colName = labels[col];
+          let colName = labels[colIndex];
 
-          // если нет такого-же значения в параметре(столбце) для данного класса -> вер-ть = 0
-          if (!this.likelihood[category][colName].hasOwnProperty(attrValue)) { prob = 0 }
-          else { prob = prob * this.likelihood[category][colName][attrValue] }
+          //----------числитель------------ P(param1|class)*P(param2|class)*...*P(paramN|class) * P(class)
+          // параметра нет для данного класса (в столбце)
+          if (!this.likelihood[category][colName].hasOwnProperty(attrValue)) 
+          { 
+            notIncluded++;
+            prob = prob * (1 /  this.total)
+          }
+          else 
+          { prob = prob * this.likelihood[category][colName][attrValue] }
 
-          col += 1;
+          // new
+          //----------знаменатель------------ P(param1)*P(param2)*...*P(paramN)
+          // параметра нет ни в одном классе (в столбце)
+          if (!this.countParam[colName].hasOwnProperty(attrValue)) 
+          { evedence = evedence * (1 /  this.total) }
+          else 
+          {             
+            let countParam = this.countParam[colName][attrValue];
+            let priorParam = countParam / this.total // P(Xi) - априорная вер-ть параметра
+            evedence = evedence * priorParam;
+           }
+
+          colIndex += 1;          
         }
 
+        if (notIncluded == testVector.length) { prob = 0 }
+        
+        // new
+        // P(param1|class)*P(param2|class)*...*P(paramN|class) * P(class)
+        //______________________________________________________________
+        //              P(param1)*P(param2)*...*P(paramN)
+        let posterior = prob / evedence;
+
+        // let res = {
+        //   'prob':prob,
+        //   'category':category
+        // };
+
+        // new
         let res = {
-          'prob':prob,
+          'prob':posterior,
           'category':category
         };
         posteriorForVector.push(res)
@@ -395,25 +457,43 @@ class Selector {
         pageElements = dataSet['pageElements'];
 
     
+    // trainSet = [
+    //   ['Rainy', 'Hot', 'High', 'False'],
+    //   ['Rainy', 'Hot', 'High', 'True'],
+    //   ['Overcast', 'Hot', 'High', 'False'],
+    //   ['Sunny', 'Mild', 'High', 'False'],
+    //   ['Sunny', 'Cool', 'Normal', 'False'],
+    //   ['Sunny', 'Cool', 'Normal', 'True'],
+    //   ['Overcast', 'Cool', 'Normal', 'True'],
+    //   ['Rainy', 'Mild', 'High', 'False'],
+    //   ['Rainy', 'Cool', 'Normal', 'False'],
+    //   ['Sunny', 'Mild', 'Normal', 'False'],
+    //   ['Rainy', 'Mild', 'Normal', 'True'],
+    //   ['Overcast', 'Mild', 'High', 'True'],
+    //   ['Overcast', 'Hot', 'Normal', 'False'],
+    //   ['Sunny', 'Mild', 'High', 'True'] ];
+    // targets = ['No','No','Yes','Yes','Yes','No','Yes','No','Yes','Yes','Yes','Yes','Yes','No'];
+    // testSet= [['Rainy', 'Cool', 'High', 'True'],
+    //             ['Overcast', 'Cool', 'High', 'True'] ]; // prob=0
+    // labels = ['Outlook','Temp','Humldity','Windy']
+    
     trainSet = [
-      ['Rainy', 'Hot', 'High', 'False'],
-      ['Rainy', 'Hot', 'High', 'True'],
-      ['Overcast', 'Hot', 'High', 'False'],
-      ['Sunny', 'Mild', 'High', 'False'],
-      ['Sunny', 'Cool', 'Normal', 'False'],
-      ['Sunny', 'Cool', 'Normal', 'True'],
-      ['Overcast', 'Cool', 'Normal', 'True'],
-      ['Rainy', 'Mild', 'High', 'False'],
-      ['Rainy', 'Cool', 'Normal', 'False'],
-      ['Sunny', 'Mild', 'Normal', 'False'],
-      ['Rainy', 'Mild', 'Normal', 'True'],
-      ['Overcast', 'Mild', 'High', 'True'],
-      ['Overcast', 'Hot', 'Normal', 'False'],
-      ['Sunny', 'Mild', 'High', 'True'] ];
-    targets = ['No','No','Yes','Yes','Yes','No','Yes','No','Yes','Yes','Yes','Yes','Yes','No'];
-    testSet= [['Rainy', 'Cool', 'High', 'True'],
-                ['Overcast', 'Cool', 'High', 'True'] ]; // prob=0
-    labels = ['Outlook','Temp','Humldity','Windy']
+      ['div','q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
+      ['div','q1', '-1', '150px', '150px', 'rgb(0, 255, 0)']
+    ];
+    targets = ['Yes','Yes'];
+    testSet= [
+      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],      
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+      ['spam', '-1', '-1', 'auto', 'auto', 'rgb(0, 0, 0)'],
+      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+      ['div', 'q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
+      ['div', 'q1', '-1', '150px', '150px', 'rgb(0, 255, 0)'],
+      ['div', 'q1', '-1', '155px', '155px', 'rgb(0, 0, 255)'] 
+    ];
+    labels = ['tagName', 'class1','class2','height','width', 'color']
 
     if (trainSet.length == 0) { // если нет тренировочных данных -> выход
       console.log('no train set');
@@ -422,15 +502,21 @@ class Selector {
     // ---------------------------------------
     let nb = new NB();
     nb.train(trainSet, targets, labels);
+      console.log('frequency table');
       console.log(nb.frequency);
+      console.log('likelihood table');
       console.log(nb.likelihood);
     let predicted = nb.predict(testSet, labels);
+      console.log('predicted');
       console.log(predicted);
     // ---------------------------------------
     this.ClearPredictedElements();
-    
+
+    let numVector = 0;
     for (let vectorPred of predicted) {
-      let lenVectorPred = predicted.length;
+      let lenVectorPred = vectorPred.length;
+
+      console.log(`-- vector ${numVector++} --`)
 
       for (let idx=0; idx < lenVectorPred; idx++) {
         let category = vectorPred[idx]['category'];
