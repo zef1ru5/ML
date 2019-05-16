@@ -1,13 +1,13 @@
-.MouseOverOut
+[data-mouseoverout="MouseOverOut"]
 {
   box-shadow: 0 0 4px 4px #0c98cf;
 }
 
-
+/* 
 [data-target="Yes"]
 {
   box-shadow: 0 0 4px 4px #8DB87C;
-}
+} */
 
 
 [data-predict="Predict"]
