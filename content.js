@@ -1,8 +1,5 @@
 /* eslint-disable no-undef */
 console.log('content');
-// -----------------------------Шифрование---------------------------
-
-
 // -----------------------------Data Set Сollector---------------------------
 class DataSetСollector {
   constructor() {
@@ -44,23 +41,25 @@ class DataSetСollector {
     return level.toString()
   }
 
-  // h2 GroupAdvertsWrapper_title__63YNe
-  // h2 Transport_h2__3m9cL
   nameClass(element) {
     let countClass = 2;
     let result = [];
 
-    let strClass = element.className;
-    let arrClass = strClass.split(' ');
-
-    for (let i = 0; i < countClass; i++) {
-      let nameCls = '';
-      if (arrClass[i] == undefined) { // если второго класса нет, либо нет классов совсем -> -1
-        result.push("-1");
-      } else {
-        nameCls = arrClass[i];
-        result.push(nameCls)
+    try {
+      let strClass = element.className;
+      let arrClass = strClass.split(' ');
+      for (let i = 0; i < countClass; i++) {
+        let nameCls = '';
+        if (arrClass[i] == undefined) { // если второго класса нет, либо нет классов совсем -> -1
+          result.push("-1");
+        } else {
+          nameCls = arrClass[i];
+          result.push(nameCls)
+        }
       }
+    } catch (err) {
+      this.illegalTags.push(element.nodeName);
+      return false;
     }
 
     return result
@@ -72,7 +71,6 @@ class DataSetСollector {
 
     for (let i = 1; i <= countParent; i++) {
       let countPar = '';
-
       if (element.parentNode == null) { // если нет родителя -> вставить родителя последнего элемента (для элементов рядом с body)
         result.push("-1");
       } else {
@@ -141,6 +139,7 @@ class DataSetСollector {
       let countChildren = this.countChildren(element);
       let level = this.level(element);
       let nameClass = this.nameClass(element);
+      if (nameClass == false) continue
       let nameParent = this.nameParent(element);
       let style = this.style(element);
       let target = this.getTarget(element);
@@ -287,7 +286,7 @@ class NB {
 
           // нет параметра для данного класса (в столбце)
           if (!this.likelihood[category][colName].hasOwnProperty(attrValue)) {
-            notIncluded++; // не нужно для 2
+            notIncluded++; // for comment
             // prob = prob * (1 / this.total)
             prob = prob * 1             
           }
@@ -337,7 +336,7 @@ class Selector {
     this.dataMouseOverOut = "MouseOverOut";
     this.selectedElements = [];
     this.predictedElements = [];
-    this.probabilityRate = 0.8;
+
     this.secret = 'nameTag';
   }
 
@@ -437,48 +436,9 @@ class Selector {
       labels = dataSet['labels'],
       testSetId = dataSet['testSetId'],
       pageElements = dataSet['pageElements'];
-
-
-    // trainSet = [
-    //   ['Rainy', 'Hot', 'High', 'False'],
-    //   ['Rainy', 'Hot', 'High', 'True'],
-    //   ['Overcast', 'Hot', 'High', 'False'],
-    //   ['Sunny', 'Mild', 'High', 'False'],
-    //   ['Sunny', 'Cool', 'Normal', 'False'],
-    //   ['Sunny', 'Cool', 'Normal', 'True'],
-    //   ['Overcast', 'Cool', 'Normal', 'True'],
-    //   ['Rainy', 'Mild', 'High', 'False'],
-    //   ['Rainy', 'Cool', 'Normal', 'False'],
-    //   ['Sunny', 'Mild', 'Normal', 'False'],
-    //   ['Rainy', 'Mild', 'Normal', 'True'],
-    //   ['Overcast', 'Mild', 'High', 'True'],
-    //   ['Overcast', 'Hot', 'Normal', 'False'],
-    //   ['Sunny', 'Mild', 'High', 'True']];
-    // targets = ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No'];
-    // testSet = [['Rainy', 'Cool', 'High', 'True'],
-    // ['Overcast', 'Cool', 'High', 'True']]; // prob=0
-    // labels = ['Outlook', 'Temp', 'Humldity', 'Windy']
-
-    trainSet = [
-      ['div','q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
-      ['div','q1', '-1', '150px', '150px', 'rgb(0, 255, 0)']
-    ];
-    targets = ['Yes','Yes'];
-    testSet= [
-      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
-      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],      
-      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
-      ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
-      ['spam', '-1', '-1', 'auto', 'auto', 'rgb(0, 0, 0)'],
-      ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
-      ['div', 'q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
-      ['div', 'q1', '-1', '150px', '150px', 'rgb(0, 255, 0)'],
-      ['div', 'q1', '-1', '155px', '155px', 'rgb(0, 0, 255)'] 
-    ];
-    labels = ['tagName', 'class1','class2','height','width', 'color']
-
+    
     if (trainSet.length == 0) { // если нет тренировочных данных -> выход
-      console.log('no train set');
+      alert('Элементы не выбраны');
       return
     }
     // ---------------------------------------
@@ -493,32 +453,27 @@ class Selector {
     console.log(predicted);
     // ---------------------------------------
     this.ClearPredictedElements();
-
-    let numVector = 0;
+    let maxPred = 0;
     for (let vectorPred of predicted) {
-      let lenVectorPred = vectorPred.length;
-
-      console.log(`-- vector ${numVector++} --`)
-
-      for (let idx = 0; idx < lenVectorPred; idx++) {
-        let category = vectorPred[idx]['category'];
-        let prob = vectorPred[idx]['prob'];
-        console.log(`${category} , ${prob}`)
+      for (let obj of vectorPred) {
+        if (obj['prob'] > maxPred) maxPred = obj['prob']
       }
     }
 
-    // for (let index = 0; index < predictLength; index++) {
-    //   let elem = predicted[index];
-    //   if ((elem['target'] == this.dataTarget) && (elem['probability'] > this.probabilityRate)) {
-    //     let id = testSetId[index];
-    //     let pageElem = pageElements[id];
-
-    //     pageElem.dataset.predict = this.dataPredict;
-    //     this.predictedElements.push( pageElem );
-    //   }
-    // }
-    // console.log(testSetId);
-    // console.log(this.predictedElements);
+    let predictLength = predicted.length;
+    for (let index = 0; index < predictLength; index++) {
+      let vectorPred = predicted[index];
+      for (let obj of vectorPred) {
+        if (obj['prob'] == maxPred) {
+          let id = testSetId[index];
+          let pageElem = pageElements[id];
+          pageElem.dataset.predict = this.dataPredict;
+          this.predictedElements.push( pageElem );
+        }
+      }      
+    }
+    console.log(testSetId);
+    console.log(this.predictedElements);
   }
 
   ClearPredictedElements() {
@@ -528,25 +483,69 @@ class Selector {
     this.predictedElements = [];
   }
 
+  getEncryptMessage(message, password) {
+    let algorithm = {
+      'name': 'GOST R 34.12',
+      'version': 2015,
+      'length': 128,
+      'mode': 'ES'
+    };
+    let chiper = new GostCipher(algorithm);
+
+    let bytePass = gostCrypto.coding.Chars.decode(password, 'utf8');
+    let byteMess = gostCrypto.coding.Chars.decode(message, 'utf8');
+    let encryptMess = chiper.encrypt(bytePass, byteMess);
+    let encodeMess = gostCrypto.coding.Base64.encode(encryptMess);
+    return encodeMess
+  }
+
+  getDecryptMessage(encodeMess, password) {
+    let algorithm = {
+      'name': 'GOST R 34.12',
+      'version': 2015,
+      'length': 128,
+      'mode': 'ES'
+    };
+    let chiper = new GostCipher(algorithm);
+
+    let bytePass = gostCrypto.coding.Chars.decode(password, 'utf8')
+    let source = gostCrypto.coding.Base64.decode(encodeMess);
+    let decryptMess = chiper.decrypt(bytePass, source);
+    let message = gostCrypto.coding.Chars.encode(decryptMess, 'utf8');
+    return message
+  }
+
   getText() {
-    console.log(123);
+    if (this.predictedElements.length == 0) return false
+    let message = "";
+    for (let elem of this.predictedElements) {
+      message += elem.textContent +"\n";
+    }
+    for (let elem of this.selectedElements) {
+      message += elem.textContent +"\n";
+    }
+    return message
   }
 
   Save(request) {
-    //...сбор
+    let message = this.getText();
+    if (message == false) {
+      alert('Данные не анализированы');
+      return
+    }
 
     let login = request.login;
     let password = request.password;
-
-    // есть ли текст (predicted)
-    let text = 'qwe';
-
-    let encryptSecret = CryptoJS.AES.encrypt(this.secret, password);
-    let encryptText = CryptoJS.AES.encrypt(text, password);// +sec + txt
+    
+    //-----------------
+    let encryptSecret = this.getEncryptMessage(this.secret, password);
+    let secretAndMessage = `${this.secret}${message}`;
+    let encryptText = this.getEncryptMessage(secretAndMessage, password);
+    //----------
     
     let encryptData = {
-      'encryptSecret':encryptSecret.toString(),
-      'encryptText':encryptText.toString()
+      'encryptSecret':encryptSecret,
+      'encryptText':encryptText
     };
 
     let jsonEncryptData = JSON.stringify(encryptData);
@@ -566,27 +565,37 @@ class Selector {
     }
 
     let encryptData = JSON.parse(jsonEncryptData);
-
     let encryptSecret = encryptData['encryptSecret'];
-    let decryptSecret = CryptoJS.AES.decrypt(encryptSecret, password).toString(CryptoJS.enc.Utf8);
 
-    if (decryptSecret == this.secret) { // проверка ПАРОЛЯ
+    //----
+    let decryptSecret = this.getDecryptMessage(encryptSecret, password);
+    //----
+
+    let regExp = new RegExp(String.fromCharCode(0), 'g');
+    let secret = decryptSecret.replace(regExp, "");
+    if (secret == this.secret) { // проверка ПАРОЛЯ
       let encryptText = encryptData['encryptText'];
-      let decryptText = CryptoJS.AES.decrypt(encryptText, password).toString(CryptoJS.enc.Utf8);
+      //----
+      let decryptText = this.getDecryptMessage(encryptText, password);
+      //----
 
-      // download decryptText
+      regExp = new RegExp(this.secret, 'g');
+      let messageDec = decryptText.replace(regExp, "");
+      regExp = new RegExp(String.fromCharCode(0), 'g');
+      let message = messageDec.replace(regExp, "");
+      // download message
       let downLink = document.createElement("a");
       downLink.setAttribute("type", "hidden");
       downLink.setAttribute("download", "data.txt");
       downLink.setAttribute("href", "");
       document.querySelector("body").appendChild(downLink);
 
-      let data = new Blob([decryptText], {type: 'text/plain'});
+      let data = new Blob([message], {type: 'text/plain'});
       let url = window.URL.createObjectURL(data);
       downLink.href = url;
-      downLink.click();
-      downLink.remove();
+      downLink.click();      
       window.URL.revokeObjectURL(url);
+      downLink.remove();
     } 
     else {
       alert('Неверный пароль');
@@ -595,7 +604,6 @@ class Selector {
 
 
 }
-
 // --------------------------------------------------------
 const selector = new Selector();
 selector.init();
