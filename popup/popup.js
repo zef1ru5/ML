@@ -22,7 +22,7 @@ class Popup {
   SendState({ target }) {
     this.state = target.checked;
 
-    let message = { 'state': this.state };
+    let message = {'state': this.state};
     // для смены иконки (to Background)
     chrome.runtime.sendMessage(message);
     // для Активации/выключения выделения (to Content)
@@ -35,12 +35,7 @@ class Popup {
 
   // показать найденные данные (to Content)
   ShowData() {
-    let val = document.querySelector('#count-data').value;
-    let count = parseInt(val, 10);
-    let message = { 
-      'operation': 'show',
-      'count': count
-    };
+    let message = {'operation': 'show'};
     let params = { active: true, currentWindow: true };
     chrome.tabs.query(params, function (tabs) {
       if (tabs.length > 0) { // If there is an active tab

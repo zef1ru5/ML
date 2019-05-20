@@ -216,32 +216,6 @@ class NB {
       }
     }
 
-    // общее количетво параметра (аттрибута) в столбце // Delete ?
-    // for (let category in counts) {
-    //   if (classes.hasOwnProperty(category)) {
-    //     let columns = counts[category];
-
-    //     for (let colName in columns) {
-    //       if (columns.hasOwnProperty(colName)) {
-    //         let valueCounts = columns[colName];
-
-    //         if (!this.countParam.hasOwnProperty(colName)) this.countParam[colName] = {};
-
-    //         for (let attrValue in valueCounts) {
-    //           if (valueCounts.hasOwnProperty(attrValue)) {
-    //             let count = valueCounts[attrValue];
-
-    //             if (!this.countParam[colName].hasOwnProperty(attrValue)) this.countParam[colName][attrValue] = 0;
-
-    //             this.countParam[colName][attrValue] += count;
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
-
     // conditional probabilities p(param|class) / Условная вероятность
     for (let category in counts) {
       if (classes.hasOwnProperty(category)) {
@@ -447,20 +421,7 @@ class Selector {
 
   }
 
-  delElementsByValue(predicted, value) {
-    let predictLength = predicted.length;
-
-    for (let index = predictLength-1; index >= 0; index--) {
-      let vectorPred = predicted[index];
-      for (let obj of vectorPred) {
-        if (obj['prob'] == value) predicted.splice(index, 1)
-      }
-    }
-
-    return predicted
-  }
-
-  Show(request) { 
+  Show() { 
     // ?? меняется ли параметры придобавлении стиля box-shadow для css target Yes
     let dataSetCollector = new DataSetСollector();
     let dataSet = dataSetCollector.collectDataSet(this.datasetClassName);
@@ -479,43 +440,30 @@ class Selector {
     // ---------------------------------------
     let nb = new NB();
     nb.train(trainSet, targets, labels);
-    console.log('frequency table');
-    console.log(nb.frequency);
-    console.log('likelihood table');
-    console.log(nb.likelihood);
     let predicted = nb.predict(testSet, labels);
-    console.log('predicted');
-    console.log(predicted);
     // ---------------------------------------
     this.ClearPredictedElements();
     //-----------------
-    let countData = request.count;
-    for (let countField=0; countField < countData; countField++) {
-
-      let maxPred = 0;
-      for (let vectorPred of predicted) {
-        for (let obj of vectorPred) {
-          if (obj['prob'] > maxPred) maxPred = obj['prob']
-        }
+    let maxPred = 0;
+    for (let vectorPred of predicted) {
+      for (let obj of vectorPred) {
+        if (obj['prob'] > maxPred) maxPred = obj['prob']
       }
-
-      let predictLength = predicted.length;
-      for (let index = 0; index < predictLength; index++) {
-        let vectorPred = predicted[index];
-        for (let obj of vectorPred) {
-          if (obj['prob'] == maxPred) {
-            let id = testSetId[index];
-            let pageElem = pageElements[id];
-            pageElem.dataset[this.datasetPredictName] = this.dataPredict;
-            this.predictedElements.push( pageElem );
-          }
-        }      
-      }
-      this.delElementsByValue(predicted, maxPred)
     }
-    //--------------------
-    console.log(testSetId);
-    console.log(this.predictedElements);
+
+    let predictLength = predicted.length;
+    for (let index = 0; index < predictLength; index++) {
+      let vectorPred = predicted[index];
+      for (let obj of vectorPred) {
+        if (obj['prob'] == maxPred) {
+          let id = testSetId[index];
+          let pageElem = pageElements[id];
+          pageElem.dataset[this.datasetPredictName] = this.dataPredict;
+          this.predictedElements.push( pageElem );
+        }
+      }      
+    }
+    //-----------------
   }
 
   ClearPredictedElements() {
