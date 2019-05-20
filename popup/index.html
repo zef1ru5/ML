@@ -12,18 +12,23 @@
 
   <div class="container">
     <header class="header">
-      <div>Login</div>
-      <div>Password</div>
+      <div class="label">
+        <div>Login</div>
+        <div>Password</div>
+      </div>
+      <div class="inpts">
+        <input type="text" id="login" autocomplete="off">
+        <input type="password" id="password">
+      </div>
     </header>
 
     <main class="main">
-      <input type="text" id="login" autocomplete="off">
-      <input type="password" id="password">
+        <div class="button" id="down-data">down</div>
+        <div class="button" id="save-data">save</div>
     </main>
 
     <footer class="footer">
-      <div class="button" id="down-data">down</div>
-      <div class="button" id="save-data">save</div>
+      <input type="number" id="count-data" min="1" value="1">      
       <div class="button" id="show-data">show</div>
       <div class="switch">
         <input type="checkbox" id="switcher" />

@@ -107,8 +107,8 @@ class DataSetСollector {
   }
 
   // возвращает target: при отсутствии NaN, либо сроку
-  getTarget(element) {
-    let target = element.dataset.target;
+  getTarget(element, datasetClassName) {
+    let target = element.dataset[datasetClassName];
     if (target == undefined) { return 'NaN' }
     else { return target }
   }
@@ -121,7 +121,7 @@ class DataSetСollector {
     return state
   }
 
-  collectDataSet() {
+  collectDataSet(datasetClassName) {
     let trainSet = [];
     let testSet = [];
     let targets = [];
@@ -142,7 +142,7 @@ class DataSetСollector {
       if (nameClass == false) continue
       let nameParent = this.nameParent(element);
       let style = this.style(element);
-      let target = this.getTarget(element);
+      let target = this.getTarget(element, datasetClassName);
 
       vector.push(nameTag, countChildren, level, ...nameClass, ...nameParent, ...style);
 
@@ -217,29 +217,29 @@ class NB {
     }
 
     // общее количетво параметра (аттрибута) в столбце // Delete ?
-    for (let category in counts) {
-      if (classes.hasOwnProperty(category)) {
-        let columns = counts[category];
+    // for (let category in counts) {
+    //   if (classes.hasOwnProperty(category)) {
+    //     let columns = counts[category];
 
-        for (let colName in columns) {
-          if (columns.hasOwnProperty(colName)) {
-            let valueCounts = columns[colName];
+    //     for (let colName in columns) {
+    //       if (columns.hasOwnProperty(colName)) {
+    //         let valueCounts = columns[colName];
 
-            if (!this.countParam.hasOwnProperty(colName)) this.countParam[colName] = {};
+    //         if (!this.countParam.hasOwnProperty(colName)) this.countParam[colName] = {};
 
-            for (let attrValue in valueCounts) {
-              if (valueCounts.hasOwnProperty(attrValue)) {
-                let count = valueCounts[attrValue];
+    //         for (let attrValue in valueCounts) {
+    //           if (valueCounts.hasOwnProperty(attrValue)) {
+    //             let count = valueCounts[attrValue];
 
-                if (!this.countParam[colName].hasOwnProperty(attrValue)) this.countParam[colName][attrValue] = 0;
+    //             if (!this.countParam[colName].hasOwnProperty(attrValue)) this.countParam[colName][attrValue] = 0;
 
-                this.countParam[colName][attrValue] += count;
-              }
-            }
-          }
-        }
-      }
-    }
+    //             this.countParam[colName][attrValue] += count;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
 
     // conditional probabilities p(param|class) / Условная вероятность
@@ -331,9 +331,15 @@ class Selector {
       { onEvent: 'mouseout', method: this.MouseOut.bind(this) },
       { onEvent: 'click', method: this.ClickEffect.bind(this) }
     ];
-    this.dataTarget = "Yes";
+    this.datasetClassName = `class${Date.now().toString()}`;
+    this.dataClass = "Yes";
+
+    this.datasetPredictName = `predict${Date.now().toString()}`;
     this.dataPredict = "Predict";
-    this.dataMouseOverOut = "MouseOverOut";
+
+    this.datasetMoseName = `mouse${Date.now().toString()}`;
+    this.dataMouseOverOut = "mouse";
+
     this.selectedElements = [];
     this.predictedElements = [];
 
@@ -348,6 +354,22 @@ class Selector {
     chrome.runtime.sendMessage(message);
     // сбросить свичер в PopUp
     chrome.storage.sync.set(message);
+
+    // STYLE
+    let style = document.createElement ( "style" ), styleSheet;    
+    style.appendChild ( document.createTextNode ( "" ) );
+    document.head.appendChild ( style );
+    styleSheet = style.sheet;
+
+    let rules = [
+      `[data-${this.datasetPredictName}=${this.dataPredict}]{box-shadow: inset 0 0 4px 4px #8DB87C;}`,
+      `[data-${this.datasetMoseName}=${this.dataMouseOverOut}]{box-shadow: 0 0 4px 4px #0c98cf;}`
+    ];
+
+    for ( let st=0; st < rules.length; st++ ) {
+      styleSheet.insertRule ( rules [st], st );
+  }
+
   }
 
   // добавляет только новые элементы в selectedElements
@@ -377,10 +399,10 @@ class Selector {
   }
 
   MouseOver(event) {
-    event.target.dataset.mouseoverout = this.dataMouseOverOut;
+    event.target.dataset[this.datasetMoseName] = this.dataMouseOverOut;
   }
   MouseOut(event) {
-    delete event.target.dataset.mouseoverout;
+    delete event.target.dataset[this.datasetMoseName];
   }
 
   // выделить как "хороший" элемент и добавить dataset
@@ -389,10 +411,10 @@ class Selector {
     event.preventDefault();
     let element = event.target
     if (event.ctrlKey) {
-      delete element.dataset.target;
+      delete element.dataset[this.datasetClassName];
       this.DelElement(element);
     } else {
-      element.dataset.target = this.dataTarget;
+      element.dataset[this.datasetClassName] = this.dataClass;
       this.PushUniqueElement(element);
     }
   }
@@ -413,22 +435,35 @@ class Selector {
     if (!state) {
       // Убрать dataset
       for (let element of this.selectedElements) {
-        delete element.dataset.target;
+        delete element.dataset[this.datasetClassName];
       }
       this.selectedElements = [] // обнулить selected
 
       for (let element of this.predictedElements) {
-        delete element.dataset.predict;
+        delete element.dataset[this.datasetPredictName];
       }
       this.predictedElements = [] // обнулить predicted
     }
 
   }
 
-  Show() {
+  delElementsByValue(predicted, value) {
+    let predictLength = predicted.length;
+
+    for (let index = predictLength-1; index >= 0; index--) {
+      let vectorPred = predicted[index];
+      for (let obj of vectorPred) {
+        if (obj['prob'] == value) predicted.splice(index, 1)
+      }
+    }
+
+    return predicted
+  }
+
+  Show(request) { 
     // ?? меняется ли параметры придобавлении стиля box-shadow для css target Yes
     let dataSetCollector = new DataSetСollector();
-    let dataSet = dataSetCollector.collectDataSet();
+    let dataSet = dataSetCollector.collectDataSet(this.datasetClassName);
 
     let trainSet = dataSet['trainSet'],
       testSet = dataSet['testSet'],
@@ -437,7 +472,7 @@ class Selector {
       testSetId = dataSet['testSetId'],
       pageElements = dataSet['pageElements'];
     
-    if (trainSet.length == 0) { // если нет тренировочных данных -> выход
+    if (trainSet.length == 0) {
       alert('Элементы не выбраны');
       return
     }
@@ -453,32 +488,39 @@ class Selector {
     console.log(predicted);
     // ---------------------------------------
     this.ClearPredictedElements();
-    let maxPred = 0;
-    for (let vectorPred of predicted) {
-      for (let obj of vectorPred) {
-        if (obj['prob'] > maxPred) maxPred = obj['prob']
-      }
-    }
+    //-----------------
+    let countData = request.count;
+    for (let countField=0; countField < countData; countField++) {
 
-    let predictLength = predicted.length;
-    for (let index = 0; index < predictLength; index++) {
-      let vectorPred = predicted[index];
-      for (let obj of vectorPred) {
-        if (obj['prob'] == maxPred) {
-          let id = testSetId[index];
-          let pageElem = pageElements[id];
-          pageElem.dataset.predict = this.dataPredict;
-          this.predictedElements.push( pageElem );
+      let maxPred = 0;
+      for (let vectorPred of predicted) {
+        for (let obj of vectorPred) {
+          if (obj['prob'] > maxPred) maxPred = obj['prob']
         }
-      }      
+      }
+
+      let predictLength = predicted.length;
+      for (let index = 0; index < predictLength; index++) {
+        let vectorPred = predicted[index];
+        for (let obj of vectorPred) {
+          if (obj['prob'] == maxPred) {
+            let id = testSetId[index];
+            let pageElem = pageElements[id];
+            pageElem.dataset[this.datasetPredictName] = this.dataPredict;
+            this.predictedElements.push( pageElem );
+          }
+        }      
+      }
+      this.delElementsByValue(predicted, maxPred)
     }
+    //--------------------
     console.log(testSetId);
     console.log(this.predictedElements);
   }
 
   ClearPredictedElements() {
     for (let pageElem of this.predictedElements) {
-      delete pageElem.dataset.predict;
+      delete pageElem.dataset[this.datasetPredictName];
     }
     this.predictedElements = [];
   }

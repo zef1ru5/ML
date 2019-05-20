@@ -4,10 +4,10 @@ class Popup {
 
   constructor() {
     this.state = false;
-    document.querySelector('#switcher').addEventListener('click', this.SendState.bind(this)); // вкл|выкл
-    document.querySelector('#show-data').addEventListener('click', this.ShowData.bind(this)); //  показать найденные данные
-    document.querySelector('#save-data').addEventListener('click', this.SaveData.bind(this)); //  сохранить выделенные данные
-    document.querySelector('#down-data').addEventListener('click', this.DownData.bind(this)); //  сохранить выделенные данные
+    document.querySelector('#switcher').addEventListener('click', this.SendState.bind(this));
+    document.querySelector('#show-data').addEventListener('click', this.ShowData.bind(this));
+    document.querySelector('#save-data').addEventListener('click', this.SaveData.bind(this));
+    document.querySelector('#down-data').addEventListener('click', this.DownData.bind(this));
   }
 
   // Проверка работы программы и индикатора checker (при закрытии окна checker сбрасывается)
@@ -19,14 +19,14 @@ class Popup {
   }
 
   // смена состояния работы программы и иконки
-  SendState({target}) {
+  SendState({ target }) {
     this.state = target.checked;
 
     let message = { 'state': this.state };
     // для смены иконки (to Background)
-    chrome.runtime.sendMessage( message ); 
+    chrome.runtime.sendMessage(message);
     // для Активации/выключения выделения (to Content)
-    chrome.tabs.query( {active: true, currentWindow: true}, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.tabs.sendMessage(tabs[0].id, message);
     });
 
@@ -35,9 +35,14 @@ class Popup {
 
   // показать найденные данные (to Content)
   ShowData() {
-    let message = {'operation': 'show'};
-    let params = {active: true, currentWindow: true};
-    chrome.tabs.query( params, function(tabs) {
+    let val = document.querySelector('#count-data').value;
+    let count = parseInt(val, 10);
+    let message = { 
+      'operation': 'show',
+      'count': count
+    };
+    let params = { active: true, currentWindow: true };
+    chrome.tabs.query(params, function (tabs) {
       if (tabs.length > 0) { // If there is an active tab
         let tab = tabs[0];
         chrome.tabs.sendMessage(tab.id, message);
@@ -49,16 +54,16 @@ class Popup {
   SaveData() {
     let login = document.querySelector('#login').value;
     let password = document.querySelector('#password').value;
-    if (login == "") {alert('Введите логин'); return}
-    if (password == "") {alert('Введите пароль'); return}
+    if (login == "") { alert('Введите логин'); return }
+    if (password == "") { alert('Введите пароль'); return }
 
     let message = {
       'operation': 'save',
       'login': login,
       'password': password
     };
-    let params = {active: true, currentWindow: true};
-    chrome.tabs.query( params, function(tabs) {
+    let params = { active: true, currentWindow: true };
+    chrome.tabs.query(params, function (tabs) {
       if (tabs.length > 0) {
         let tab = tabs[0];
         chrome.tabs.sendMessage(tab.id, message);
@@ -70,16 +75,16 @@ class Popup {
   DownData() {
     let login = document.querySelector('#login').value;
     let password = document.querySelector('#password').value;
-    if (login == "") {alert('Введите логин'); return}
-    if (password == "") {alert('Введите пароль'); return}
-     
+    if (login == "") { alert('Введите логин'); return }
+    if (password == "") { alert('Введите пароль'); return }
+
     let message = {
       'operation': 'down',
       'login': login,
       'password': password
     };
-    let params = {active: true, currentWindow: true};
-    chrome.tabs.query( params, function(tabs) {
+    let params = { active: true, currentWindow: true };
+    chrome.tabs.query(params, function (tabs) {
       if (tabs.length > 0) {
         let tab = tabs[0];
         chrome.tabs.sendMessage(tab.id, message);
