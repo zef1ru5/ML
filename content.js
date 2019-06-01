@@ -542,6 +542,13 @@ class Selector {
     let jsonEncryptData = JSON.stringify(encryptData);
 
     localStorage.setItem(login, jsonEncryptData);
+
+    // отклдчение выделения и свичера
+    let swch = { 'state': false };
+    chrome.runtime.sendMessage(swch);
+    chrome.storage.sync.set(swch);
+    this.ToggleEventListeners(flase)
+
     alert('Готово');
   }
 
