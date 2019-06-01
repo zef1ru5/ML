@@ -337,7 +337,8 @@ class Selector {
 
     let rules = [
       `[data-${this.datasetPredictName}=${this.dataPredict}]{box-shadow: inset 0 0 4px 4px #8DB87C;}`,
-      `[data-${this.datasetMoseName}=${this.dataMouseOverOut}]{box-shadow: 0 0 4px 4px #0c98cf;}`
+      `[data-${this.datasetMoseName}=${this.dataMouseOverOut}]{box-shadow: 0 0 4px 4px #0c98cf;}`,
+      `[data-${this.datasetClassName}=${this.dataClass}]{background-color: rgba(101, 206, 247, 0.3)}`
     ];
 
     for ( let st=0; st < rules.length; st++ ) {
@@ -576,11 +577,11 @@ class Selector {
       // download message
       let downLink = document.createElement("a");
       downLink.setAttribute("type", "hidden");
-      downLink.setAttribute("download", "data.txt");
+      downLink.setAttribute("download", "data.csv");
       downLink.setAttribute("href", "");
       document.querySelector("body").appendChild(downLink);
 
-      let data = new Blob([message], {type: 'text/plain'});
+      let data = new Blob([message], {type: 'text/csv; charset=UTF-8'});
       let url = window.URL.createObjectURL(data);
       downLink.href = url;
       downLink.click();      
