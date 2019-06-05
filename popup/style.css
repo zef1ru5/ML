@@ -63,11 +63,12 @@ input
 /* --------- */
 .button {
   color: black;
-  border: 1px solid black;
+  /* border: 1px solid black; */
   padding: 2px;
   /* text-transform: uppercase; */
   letter-spacing: 2px;
   cursor: pointer;
+  font-weight: 400;
   }
 
 /* start Переключатель */
