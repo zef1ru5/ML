@@ -44,7 +44,7 @@ class Protector {
 
   // for Save
   getEncryptSecretAndText(message, password) {
-    let encryptSecret = this.getEncryptMessage(this.secret, password);
+    // let encryptSecret = this.getEncryptMessage(this.secret, password);
     let secretAndMessage = `${this.secret}${message}`;
     let encryptText = this.getEncryptMessage(secretAndMessage, password);
     return [encryptSecret, encryptText];
@@ -93,7 +93,8 @@ class Manager {
     let password = request.password;        
     
     // Protector
-    let [encryptSecret, encryptText] = this.protector.getEncryptSecretAndText(message, password);
+    // let [encryptSecret, encryptText] = this.protector.getEncryptSecretAndText(message, password);
+    let encryptText = this.protector.getEncryptSecretAndText(message, password);
 
     let encryptData = {
       'encryptSecret': encryptSecret,
@@ -157,7 +158,7 @@ class ML {
 
     for (let idx = 0; idx < this.total; idx++) {
       let vector = trainSet[idx];
-      let category = targets[idx];
+      let category = targets[idx]; // category - class
 
       if (!classes.hasOwnProperty(category)) {
         classes[category] = 0;
@@ -634,6 +635,26 @@ class Main {
     for (let pageElem of predictedElements) delete pageElem.dataset[datasetPredictName];
 
     // ML (full)
+    // trainSet = [
+    //   ['DIV', '0', '13', 'header-1dF9r', '-1', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', '18, 18, 18', '33', '157.359', '22', '157.359', '700', '33', '27.94', '78.6719 16.5', 'Lato'],
+    //   ['DIV', '0', '14', 'header-1df-X', '-1', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', '18, 18, 18', '28', '109.531', '16', '109.531', '700', '28', '22', '54.7656 14', 'Lato'],
+    //   ['DIV', '0', '14', 'header-1df-X', '-1', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', 'DIV', '18, 18, 18', '28', '118.813', '16', '118.813', '700', '28', '22', '59.4063 14', 'Lato']
+    // ];
+    // targets = ['Yes','Yes','Yes'];
+    // testSet= [
+    //   ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],      
+    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+    //   ['div', 'main', 'bbb', '300px', '300px', 'rgb(0, 0, 0)'],
+    //   ['spam', '-1', '-1', 'auto', 'auto', 'rgb(0, 0, 0)'],
+    //   ['div', 'wrapper_for_', '-1', '500px', '500px', 'rgb(0, 0, 0)'],
+    //   ['div', 'q1', '-1', '150px', '150px', 'rgb(255, 0, 0)'],
+    //   ['div', 'q1', '-1', '150px', '150px', 'rgb(0, 255, 0)'],
+    //   ['div', 'q1', '-1', '155px', '155px', 'rgb(0, 0, 255)'] 
+    // ];
+    // labels = ['tagName', 'class1','class2','height','width', 'color']
+
+
     predictedElements = this.ml.newPredictedElements(dataSet['trainSet'], dataSet['targets'], dataSet['labels'], dataSet['testSet'], dataSet['testSetId'], dataSet['pageElements']);
     
     // set dataset prdected elem
