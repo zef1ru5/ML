@@ -21,6 +21,8 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "excel/xlsx.full.min.js",
+        "excel/excelplus-2.5.min.js",
         "gostCrypto/gostEngine.dist.js",
         "gostCrypto/gostCrypto.dist.js",
         "content.js"
@@ -34,6 +36,6 @@
   "permissions": [
     "tabs",
     "storage",
-    "http://server.zef1ru5.keenetic.link/"
+    "*://*/*"
   ]
 }

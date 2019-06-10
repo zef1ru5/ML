@@ -44,22 +44,19 @@ class Protector {
 
   // for Save
   getEncryptSecretAndText(message, password) {
-    // let encryptSecret = this.getEncryptMessage(this.secret, password);
     let secretAndMessage = `${this.secret}${message}`;
     let encryptText = this.getEncryptMessage(secretAndMessage, password);
-    return [encryptSecret, encryptText];
+    return encryptText;
   }
 
   // for Down
-  checkSecretAndGetDecryptText(encryptSecret, encryptText, password) {
-    let decryptSecret = this.getDecryptMessage(encryptSecret, password);
-    let regExp = new RegExp(String.fromCharCode(0), 'g');
-    let secret = decryptSecret.replace(regExp, "");
-    
-    if (secret != this.secret) return false; // проверка ПАРОЛЯ
-    
+  checkSecretAndGetDecryptText( encryptText, password) {   
     let decryptText = this.getDecryptMessage(encryptText, password);
-    regExp = new RegExp(this.secret, 'g');
+    let regExp = new RegExp(this.secret, 'g');
+    let secretObj = decryptText.match(regExp, 'i');
+    if (secretObj == null) return false; // целостность
+    if ((secretObj[0] != this.secret) & (secretObj.index != 0)) return false; // целостность
+
     let messageDec = decryptText.replace(regExp, "");
     regExp = new RegExp(String.fromCharCode(0), 'g');
     let message = messageDec.replace(regExp, "");
@@ -71,7 +68,7 @@ class Protector {
 }
 
 
-// --- Manager: save and download ---
+// --- Manager: save and download and logs---
 class Manager {
   constructor () {
     this.protector = new Protector();
@@ -93,11 +90,9 @@ class Manager {
     let password = request.password;        
     
     // Protector
-    // let [encryptSecret, encryptText] = this.protector.getEncryptSecretAndText(message, password);
     let encryptText = this.protector.getEncryptSecretAndText(message, password);
 
     let encryptData = {
-      'encryptSecret': encryptSecret,
       'encryptText': encryptText
     };
 
@@ -114,11 +109,58 @@ class Manager {
     if (jsonEncryptData == null) { alert('Нет данных для загрузки'); return }
 
     let encryptData = JSON.parse(jsonEncryptData);
-    let encryptSecret = encryptData['encryptSecret'];
     let encryptText = encryptData['encryptText'];
 
-    let message = this.protector.checkSecretAndGetDecryptText(encryptSecret, encryptText, password);
-    if (message == false) { alert('Неверный пароль'); return } // проверка ПАРОЛЯ
+    let message = this.protector.checkSecretAndGetDecryptText(encryptText, password);
+
+    if (message == false) { // LOGS
+      let jsoninfo = localStorage.getItem('logs');
+      if (jsoninfo == null) {
+        let log = {
+          'login': login,
+          'times': [Date.now()]
+        };
+        let info = [];
+        info.push(log);
+        jsoninfo = JSON.stringify(info);
+        localStorage.setItem('logs', jsoninfo); 
+      } else {
+          let info = JSON.parse(jsoninfo);
+          let findLogin = false;
+          for (let idx = 0; idx <info.length; idx++) {
+
+            let obj = info[idx];
+            if (obj['login'] == login) {
+              findLogin = true;
+
+              let minTime = obj['times'][0];
+              let index = 0;
+              let writeTime = false;
+              for (let tt=0; tt < 5; tt++) {
+                let tme = obj['times'][tt];
+                if (tme == undefined) { info[idx]['times'][tt] = Date.now(); writeTime = true; break; } // [1, 2]
+                if (tme < minTime) { minTime = tme ;index = tt }
+              }
+              if (writeTime == false) { info[idx]['times'][index] = Date.now(); break; } // [1, 2, 3, 4, 5]
+            }
+            if (findLogin == true) break;
+          }
+
+          if (findLogin == false) {
+            let log = { 
+              'login': login,
+              'times': [Date.now()]
+            };
+            info.push(log);            
+          }
+          jsoninfo = JSON.stringify(info);
+          localStorage.setItem('logs', jsoninfo);
+      }
+      
+
+      alert('Неверный пароль'); 
+      return 
+    } // проверка целостность/пароль
 
     // download message
     let downLink = document.createElement("a");
@@ -133,6 +175,27 @@ class Manager {
     downLink.click();      
     window.URL.revokeObjectURL(url);
     downLink.remove();
+  }
+
+  Logs(request) {
+    let login = request.login;
+    let jsoninfo = localStorage.getItem('logs');
+    if (jsoninfo == null) {alert('Нет логов'); return}
+    let info = JSON.parse(jsoninfo);
+
+    let message = '';
+    let findLogin = false;
+    for (let idx = 0; idx < info.length; idx++) {
+      let obj = info[idx];
+      if (obj['login'] == login) {
+        findLogin = true;        
+        for (let tt=0; tt < obj['times'].length; tt++) message += new Date(obj['times'][tt]).toString()  +"\n";
+      }
+      if (findLogin == true) {alert(message); return}
+    }
+
+    if (findLogin == false) {alert('У вас небыло ошибок'); return}
+
   }
 
 
@@ -313,10 +376,8 @@ clearPredictedElements() {
 class Сollector {
   constructor() {
     this.dataSet = {};
-
     this.nodeRoot = document.body.querySelectorAll('*'); // все элементв в body по порядку
     this.illegalTags = ['SCRIPT', 'STYLE'];
-
     this.labels = [
       'nameTag',
       'countChildren',
@@ -342,14 +403,26 @@ class Сollector {
     return count.toString()
   }
 
-  level(element) {
+  level(element, num) {
     let level = 0;
+        console.log(num);//test
     while (element.nodeName != 'BODY') {
       element = element.parentNode;
       level++;
     }
-
     return level.toString()
+
+    // try {
+    //   while (element.nodeName != 'BODY') {
+    //     element = element.parentNode;
+    //     level++;
+    //   }
+  
+    //   return level.toString()
+    // } catch (err) {
+    //   console.log(element, num);
+    // }
+    
   }
 
   nameClass(element) {
@@ -427,12 +500,17 @@ class Сollector {
   isIllegalTag(element) {
     let state = false;
     for (let name of this.illegalTags) {
-      if (element.nodeName == name) state = true;
+      if (element.nodeName == name) {
+        state = true;
+        break;
+      }
     }
     return state
   }
 
   collectDataSet(datasetClassName) {
+    let TESTING_ELEMENTS = []; //test
+
     let trainSet = [];
     let testSet = [];
     let targets = [];
@@ -442,15 +520,27 @@ class Сollector {
 
     // обход в глубину
     for (let i = 0; i < nodeLength; i++) {
+              // if (i == 5839) {
+              //   console.log(12);
+              // }
       let vector = [];
       let element = this.nodeRoot[i];
-      if (this.isIllegalTag(element)) continue
+
+      let noLegal = this.isIllegalTag(element);
+      if (noLegal == true) { continue };
 
       let nameTag = this.nameTag(element);
-      let countChildren = this.countChildren(element);
-      let level = this.level(element);
+      let countChildren = this.countChildren(element); 
+            if (countChildren != 0) { continue }; //test
+            TESTING_ELEMENTS.push(element);
+            // this.Ssleep(5);
+            // if (element == null) {
+            //   console.log('ELEMENT NULL' , element, i);
+            // }
+      
       let nameClass = this.nameClass(element);
-      if (nameClass == false) continue
+      let level = this.level(element, i); // i - test
+      if (nameClass == false) { continue };
       let nameParent = this.nameParent(element);
       let style = this.style(element);
       let target = this.getTarget(element, datasetClassName);
@@ -472,8 +562,19 @@ class Сollector {
       'targets': targets,
       'labels': this.labels,
       'testSetId': testSetId,
-      'pageElements': this.nodeRoot
+      'pageElements': this.nodeRoot,
+      'TESTING_ELEMENTS': TESTING_ELEMENTS //test
     };
+  }
+
+  Ssleep(milliseconds) { //test
+    let start = new Date().getTime();
+    for (let i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds){
+        break;
+      }
+    }
+    console.log('Sseep');
   }
 
   getDataSet() {
@@ -606,19 +707,42 @@ class Main {
                       if (request.state == false) this.clearDatasetsOnPage();
                       break;
       case 'manager': if (request.operation == 'save') {
-                          this.manager.Save( request, this.selector.getSelectedElements(), this.ml.getPredictedElements() );
+                          this.manager.Save(request, this.selector.getSelectedElements(), this.ml.getPredictedElements() );
                           // отклдчение свичера и выделения
                           let swch = {'state': false};
                           chrome.runtime.sendMessage(swch); chrome.storage.sync.set(swch);
                           this.selector.ToggleEventListeners(swch);
                           this.clearDatasetsOnPage();
-                        }
-                        else this.manager.Down(request);
+                        };
+                        if (request.operation == 'down') this.manager.Down(request);
+                        if (request.operation == 'logs') this.manager.Logs(request);
                        break;
       case 'main': this.Show(); break;
+
+      case 'test': this.TEST(); break;
     }
-    return true; // Del ?
+    return true;
   }
+
+  TEST(){
+    this.collector.collectDataSet(this.selector.getDatasetClassName());
+    let dataSet = this.collector.getDataSet(); 
+    // let TESTING_ELEMENTS = dataSet['TESTING_ELEMENTS'] // del
+    // console.log(TESTING_ELEMENTS);
+    let testSet = dataSet['testSet']
+
+    var ep=new ExcelPlus();
+    ep.createFile("Book1")
+      .write({ "content": testSet })
+      // .write({ "sheet":"Book1", "cell":"D1", "content":new Date() })
+      .saveAs("demo.xlsx");
+  }
+
+
+
+
+
+
 
   Show() {
     // Collector (full)
