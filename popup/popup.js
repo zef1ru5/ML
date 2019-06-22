@@ -7,8 +7,8 @@ class Popup {
     document.querySelector('#show-data').addEventListener('click', this.ShowData.bind(this));
     document.querySelector('#save-data').addEventListener('click', this.SaveData.bind(this));
     document.querySelector('#down-data').addEventListener('click', this.DownData.bind(this));
-    document.querySelector('#logs').addEventListener('click', this.Logs.bind(this));
-    document.querySelector('#TEST').addEventListener('click', this.TEST.bind(this));
+    // document.querySelector('#logs').addEventListener('click', this.Logs.bind(this));
+    // document.querySelector('#TEST').addEventListener('click', this.TEST.bind(this));
 
     // Проверка работы программы и индикатора checker (при закрытии окна checker сбрасывается)
     chrome.storage.sync.get('state', (storage) => {

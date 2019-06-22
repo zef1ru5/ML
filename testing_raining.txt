@@ -1,0 +1,31 @@
+      // trainSet = [
+      //   ['DIV' ,'0' ,'13' ,'c6e8ba5398--header--1dF9r' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(18, 18, 18)' ,'33px' ,'157.359px' ,'22px' ,'157.359px' ,'700' ,'33px' ,'27.94px' ,'78.6719px 16.5px' ,'Lato'],
+      //   ['DIV' ,'0' ,'14' ,'c6e8ba5398--header--1df-X' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(18, 18, 18)' ,'28px' ,'109.531px' ,'16px' ,'109.531px' ,'700' ,'28px' ,'22px' ,'54.7656px 14px' ,'Lato'],
+      //   ['DIV' ,'0' ,'14' ,'c6e8ba5398--header--1df-X' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(18, 18, 18)' ,'28px' ,'118.813px' ,'16px' ,'118.813px' ,'700' ,'28px' ,'22px' ,'59.4063px 14px' ,'Lato']
+      // ];
+      // targets = ['Yes','Yes','Yes'];
+      // testSet= [
+      //   ['DIV' ,'4' ,'13' ,'-1' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(18, 18, 18)' ,'92px' ,'270.125px' ,'14px' ,'270.125px' ,'400' ,'92px' ,'20px' ,'135.063px 46px' ,'Lato'],
+      //   ['DIV' ,'0' ,'14' ,'c6e8ba5398--header--1df-X' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(18, 18, 18)' ,'28px' ,'118.813px' ,'16px' ,'118.813px' ,'700' ,'28px' ,'22px' ,'59.4063px 14px' ,'Lato'],      
+      //   ['DIV' ,'0' ,'14' ,'c6e8ba5398--term--3kvtJ' ,'-1' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'DIV' ,'rgb(122, 122, 122)' ,'22px' ,'270.125px' ,'14px' ,'270.125px' ,'400' ,'22px' ,'20.02px' ,'135.063px 11px' ,'Lato']
+      // ];
+
+      // trainSet = [
+      //   ['Rainy', 'Hot', 'High', 'False'],
+      //   ['Rainy', 'Hot', 'High', 'True'],
+      //   ['Overcast', 'Hot', 'High', 'False'],
+      //   ['Sunny', 'Mild', 'High', 'False'],
+      //   ['Sunny', 'Cool', 'Normal', 'False'],
+      //   ['Sunny', 'Cool', 'Normal', 'True'],
+      //   ['Overcast', 'Cool', 'Normal', 'True'],
+      //   ['Rainy', 'Mild', 'High', 'False'],
+      //   ['Rainy', 'Cool', 'Normal', 'False'],
+      //   ['Sunny', 'Mild', 'Normal', 'False'],
+      //   ['Rainy', 'Mild', 'Normal', 'True'],
+      //   ['Overcast', 'Mild', 'High', 'True'],
+      //   ['Overcast', 'Hot', 'Normal', 'False'],
+      //   ['Sunny', 'Mild', 'High', 'True']];
+      // targets = ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No'];
+      // testSet = [['Rainy', 'Cool', 'High', 'True'],
+      // ['Overcast', 'Cool', 'High', 'True']]; // prob=0
+      // labels = ['Outlook', 'Temp', 'Humldity', 'Windy']

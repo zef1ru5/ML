@@ -509,7 +509,7 @@ class Сollector {
   }
 
   collectDataSet(datasetClassName) {
-    let TESTING_ELEMENTS = []; //test
+    // let TESTING_ELEMENTS = []; //test
 
     let trainSet = [];
     let testSet = [];
@@ -531,15 +531,16 @@ class Сollector {
 
       let nameTag = this.nameTag(element);
       let countChildren = this.countChildren(element); 
-            if (countChildren != 0) { continue }; //test
-            TESTING_ELEMENTS.push(element);
+            // if (countChildren != 0) { continue }; //test
+            // TESTING_ELEMENTS.push(element);
+
             // this.Ssleep(5);
             // if (element == null) {
             //   console.log('ELEMENT NULL' , element, i);
             // }
       
-      let nameClass = this.nameClass(element);
       let level = this.level(element, i); // i - test
+      let nameClass = this.nameClass(element);
       if (nameClass == false) { continue };
       let nameParent = this.nameParent(element);
       let style = this.style(element);
@@ -563,19 +564,19 @@ class Сollector {
       'labels': this.labels,
       'testSetId': testSetId,
       'pageElements': this.nodeRoot,
-      'TESTING_ELEMENTS': TESTING_ELEMENTS //test
+      // 'TESTING_ELEMENTS': TESTING_ELEMENTS //test
     };
   }
 
-  Ssleep(milliseconds) { //test
-    let start = new Date().getTime();
-    for (let i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds){
-        break;
-      }
-    }
-    console.log('Sseep');
-  }
+  // Ssleep(milliseconds) { //test
+  //   let start = new Date().getTime();
+  //   for (let i = 0; i < 1e7; i++) {
+  //     if ((new Date().getTime() - start) > milliseconds){
+  //       break;
+  //     }
+  //   }
+  //   console.log('Sseep');
+  // }
 
   getDataSet() {
     return this.dataSet;
